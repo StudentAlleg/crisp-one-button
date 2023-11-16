@@ -1,7 +1,9 @@
 title = "Cannon";
 
 description = `
-test
+Don't let the 
+blocks cross 
+the line!
 `;
 
 characters = [];
@@ -28,13 +30,28 @@ let cannon
  * @typedef {{
  *  pos: Vector,
  *  initialV: Vector,
- * }}
+ *  start: number;
+ * }} Ball
  */
 
 /**
- * @type {Array<Vector>}
+ * @type {Array<Ball>}
  */
 let balls;
+
+/**
+ * @typedef {{
+ *  pos: Vector,
+ *  size: Vector,
+ *  speed: Vector
+ * }} Block
+ */
+
+/**
+ * @type {Array<Block>}
+ */
+
+let blocks;
 
 /**
  * @type {number}
@@ -54,6 +71,8 @@ function update() {
       cannonRadius: 10,
       barrelLength: 20,
     }
+
+    balls = [];
   }
 
   if (ticks % 4 == 0) {
@@ -67,16 +86,22 @@ function update() {
     }
   }
 
+  remove(balls, (ball) => {
+    return ball.pos.y > 100 || ball.pos.x > 100;
+  });
+
   balls.forEach(ball => {
-    
+    updateBall(ball, ticks);
+    renderBall(ball);
   });
 
   if (input.isPressed) {
+    if (ticks % 10 == 0)
     power++;
   }
 
   if (input.isJustReleased) {
-    shootCannon(cannon, power, balls);
+    shootCannon(cannon, power/10, balls, ticks);
     power = 0;
   }
   //cannon.angle = cannon.pos.angleTo(input.pos);
@@ -97,13 +122,70 @@ function renderCannon(cannon) {
   arc(cannon.pos.x, cannon.pos.y, cannon.cannonRadius, 1);
 }
 
-function shootCannon(cannon, power, balls) {
+/**
+ * 
+ * @param {Cannon} cannon 
+ * @param {number} power 
+ * @param {Array<Ball>} balls 
+ * @param {number} ticks 
+ */
+function shootCannon(cannon, power, balls, ticks) {
+  console.log(power);
+  
+  
+  /**
+   * @type {Ball}
+   */
 
+
+  let newBall = {
+    pos: getPoint(cannon.barrelLength, cannon.angle).add(cannon.pos),
+    initialV: getPoint(power, cannon.angle),
+    start: ticks
+  }
+  balls.push(newBall);
+  console.log(newBall);
 }
 
-function updateBall(ball) {
+/**
+ * 
+ * @param {Ball} ball 
+ * @param {*} ticks 
+ */
+function updateBall(ball, ticks) {
+  /**
+   * @type {number}
+   */
 
+  let updateRate = 1;
+  
+  /**
+   * @type {number}
+   */
+
+  let dT = (ticks - ball.start);
+
+  /**
+   * @type {number}
+   */
+
+  let g = 0.01;
+  
+  if (dT % updateRate == 0) {
+    ball.pos = ball.pos.add(ball.initialV).add(0, (dT * g)/updateRate);
+  }
 }
+
+function renderBall(ball) {
+  color("black")
+  arc(ball.pos.x, ball.pos.y, 2, 1);
+}
+
+function renderBlock(block) {
+  color("red");
+  box(block.pos.x, block.pos.y, block.size.x, block.size.y);
+}
+
 
 /**
  * 
