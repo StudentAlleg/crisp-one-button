@@ -63,6 +63,11 @@ let change = PI/64;
  */
 let power = 0;
 
+/**
+ * @type {number}
+ */
+let maxPower = 20;
+
 function update() {
   if (!ticks) {
     cannon = {
@@ -73,6 +78,7 @@ function update() {
     }
 
     balls = [];
+    blocks = [];
   }
 
   if (ticks % 4 == 0) {
@@ -86,6 +92,26 @@ function update() {
     }
   }
 
+  if (ticks % 900/difficulty == 0) {
+    /** 
+     * @type {Block}
+     */
+    let newBlock = {
+      pos: vec(100, rndi(10, 80)),
+      size: vec(5, 5),
+      speed: vec(1, 0)
+    }
+    blocks.push(newBlock);
+  } 
+  
+  blocks.forEach(block => {
+    if (block.pos.x < 0 || block.pos.y > 100) {
+      end();
+    }
+    updateBlock(block, ticks);
+    renderBlock(block);
+  })
+
   remove(balls, (ball) => {
     return ball.pos.y > 100 || ball.pos.x > 100;
   });
@@ -93,12 +119,26 @@ function update() {
   balls.forEach(ball => {
     updateBall(ball, ticks);
     renderBall(ball);
+    remove(blocks, block => {
+      if (ball.pos.isInRect(block.pos.x - block.size.x/2, block.pos.y - block.size.y/2, block.size.x, block.size.y)) {
+        addScore(1 * difficulty);
+        return true;
+      }
+      return false;
+    })
   });
+
+
 
   if (input.isPressed) {
     if (ticks % 10 == 0)
     power++;
+    if (power > maxPower) power = maxPower;
+    console.log(power);
   }
+
+  color("black")
+  bar(95, 100, (power/maxPower) * 15, 5, PI/2);
 
   if (input.isJustReleased) {
     shootCannon(cannon, power/10, balls, ticks);
@@ -157,12 +197,6 @@ function updateBall(ball, ticks) {
    * @type {number}
    */
 
-  let updateRate = 1;
-  
-  /**
-   * @type {number}
-   */
-
   let dT = (ticks - ball.start);
 
   /**
@@ -170,10 +204,24 @@ function updateBall(ball, ticks) {
    */
 
   let g = 0.01;
-  
-  if (dT % updateRate == 0) {
-    ball.pos = ball.pos.add(ball.initialV).add(0, (dT * g)/updateRate);
+
+  ball.pos = ball.pos.add(ball.initialV).add(0, (dT * g));
+
+}
+
+/**
+ * 
+ * @param {Block} block 
+ * @param {number} ticks 
+ */
+function updateBlock(block, ticks) {
+  /**
+   * @type {number}
+   */
+  if (ticks % 30 == 0) {
+    block.pos = block.pos.sub(block.speed);
   }
+  
 }
 
 function renderBall(ball) {
