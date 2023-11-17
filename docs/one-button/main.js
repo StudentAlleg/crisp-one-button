@@ -120,7 +120,7 @@ function update() {
     updateBall(ball, ticks);
     renderBall(ball);
     remove(blocks, block => {
-      if (ball.pos.isInRect(block.pos.x - block.size.x/2, block.pos.y - block.size.y/2, block.size.x, block.size.y)) {
+      if (ball.pos.isInRect(block.pos.x - block.size.x, block.pos.y - block.size.y, block.size.x, block.size.y)) {
         addScore(1 * difficulty);
         return true;
       }
